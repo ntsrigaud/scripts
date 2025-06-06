@@ -11,7 +11,7 @@ echo "Installing scripts to $INSTALL_DIR..."
 # Iterate over all .sh scripts in the current directory
 for script in *.sh; do
   if [ -x "$script" ]; then
-    cp "$script" "$INSTALL_DIR"
+    cp -p "$script" "$INSTALL_DIR"
     echo "Installed: $script → $INSTALL_DIR/$script"
   else
     echo "Skipping $script (not executable)"
