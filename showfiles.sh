@@ -4,7 +4,7 @@
 
 # Input validation
 if [ $# -ne 2 ]; then
-  echo "Usage: $0 <directory> <extension>"
+  echo "Usage: $0 <directory> <extension>" >&2
   exit 1
 fi
 
