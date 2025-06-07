@@ -9,7 +9,7 @@ if [ $# -ne 2 ]; then
 fi
 
 DIR="$1"
-EXT="$2"
+EXT="${2#.}"
 
 # Check if directory exists
 if [ ! -d "$DIR" ]; then
