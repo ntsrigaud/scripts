@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 
 # Detect OS and set default install directory
-INSTALL_DIR="$HOME/.local/bin"
+case "$(uname -s)" in
+  Linux)
+    INSTALL_DIR="$HOME/.local/bin"
+    ;;
+  Darwin)
+    INSTALL_DIR="/usr/local/bin"
+   ;;
+  *)
+   echo "⚠️ Unsupported OS: $(uname -s). Please manually set the install directory."
+   exit 1
+   ;;
+esac
 
 # Create the directory if it doesn't exist
 mkdir -p "$INSTALL_DIR"
