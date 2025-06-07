@@ -21,6 +21,10 @@ echo "📁 Installing scripts to $INSTALL_DIR..."
 
 # Iterate over all .sh scripts in the current directory
 for script in *.sh; do
+  # Skip the installer script itself
+  if [ "$script" == "install_scripts.sh" ]; then
+    continue
+  fi
   if [ -x "$script" ]; then
     cp -p "$script" "$INSTALL_DIR"
     echo "✅ Installed: $script → $INSTALL_DIR/$script"
