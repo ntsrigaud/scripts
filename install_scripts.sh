@@ -74,5 +74,5 @@ else
   echo "📦 $INSTALL_DIR already in PATH in $SHELL_RC"
 fi
 
-echo -e "\n🎉 All done!"
+printf "\n🎉 All done!\n"
 echo "🔄 Please restart your terminal or run: source $SHELL_RC"
