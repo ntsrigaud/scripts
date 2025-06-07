@@ -1,35 +1,63 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Default installation directory
+# Detect OS and set default install directory
 INSTALL_DIR="$HOME/.local/bin"
 
-# Ensure the install directory exists
+# Create the directory if it doesn't exist
 mkdir -p "$INSTALL_DIR"
 
-echo "Installing scripts to $INSTALL_DIR..."
+echo "📁 Installing scripts to $INSTALL_DIR..."
 
 # Iterate over all .sh scripts in the current directory
 for script in *.sh; do
   if [ -x "$script" ]; then
     cp -p "$script" "$INSTALL_DIR"
-    echo "Installed: $script → $INSTALL_DIR/$script"
+    echo "✅ Installed: $script → $INSTALL_DIR/$script"
   else
-    echo "Skipping $script (not executable)"
+    read -p "⚠️  '$script' is not executable. Make it executable and install it? [y/N]: " confirm
+    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+      chmod +x "$script"
+      cp -p "$script" "$INSTALL_DIR"
+      echo "✅ Installed: $script → $INSTALL_DIR/$script"
+    else
+      echo "⏭️ Skipped: $script"
+    fi
   fi
 done
 
-# Ensure the install path is in the user's shell PATH
-SHELL_RC="$HOME/.zshrc"
-if [ -n "$BASH_VERSION" ]; then
-  SHELL_RC="$HOME/.bashrc"
-fi
+# Detect current shell
+CURRENT_SHELL="$(basename "$SHELL")"
+echo "🧠 Detected shell: $CURRENT_SHELL"
 
-# Add export to shell config only if not already present
-if ! grep -q "$INSTALL_DIR" "$SHELL_RC"; then
-  echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> "$SHELL_RC"
-  echo "Updated $SHELL_RC to include $INSTALL_DIR in PATH"
+# Determine correct shell RC file
+case "$CURRENT_SHELL" in
+  bash)
+    SHELL_RC="$HOME/.bashrc"
+    ;;
+  zsh)
+    SHELL_RC="$HOME/.zshrc"
+    ;;
+  fish)
+    SHELL_RC="$HOME/.config/fish/config.fish"
+    ;;
+  *)
+    echo "⚠️  Unsupported shell: $CURRENT_SHELL. Please manually add $INSTALL_DIR to your PATH."
+    exit 1
+    ;;
+esac
+
+# Check if path is already in RC file
+if ! grep -q "$INSTALL_DIR" "$SHELL_RC" 2>/dev/null; then
+  echo "" >> "$SHELL_RC"
+  if [[ "$CURRENT_SHELL" == "fish" ]]; then
+    echo "set -gx PATH \"$INSTALL_DIR\" \$PATH" >> "$SHELL_RC"
+  else
+    echo "export PATH=\"$INSTALL_DIR:\$PATH\"" >> "$SHELL_RC"
+  fi
+  echo "✅ Updated $SHELL_RC to include $INSTALL_DIR in PATH"
 else
-  echo "$INSTALL_DIR already in PATH"
+  echo "📦 $INSTALL_DIR already in PATH in $SHELL_RC"
 fi
 
-echo "✅ All done. Restart your terminal or run 'source $SHELL_RC' to use the installed scripts."
+echo -e "\n🎉 All done!"
+echo "🔄 Please restart your terminal or run: source $SHELL_RC"
