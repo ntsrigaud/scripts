@@ -13,7 +13,7 @@ EXT="$2"
 
 # Check if directory exists
 if [ ! -d "$DIR" ]; then
-  echo "Error: Directory '$DIR' does not exist."
+  echo "Error: Directory '$DIR' does not exist." >&2
   exit 1
 fi
 
