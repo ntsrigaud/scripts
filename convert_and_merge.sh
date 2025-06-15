@@ -45,6 +45,12 @@ done
 echo "Files to be merged:"
 ls -la "$TEMP_DIR"/*.pdf
 
+# Check if any PDF files exist in the temporary directory
+if ! ls "$TEMP_DIR"/*.pdf >/dev/null 2>&1; then
+  echo "❌ No PDF files found in the temporary directory. Exiting."
+  rm -r "$TEMP_DIR"
+  exit 1
+fi
 echo "Merging PDFs..."
 pdfunite "$TEMP_DIR"/*.pdf "$OUTPUT_FILE"
 
