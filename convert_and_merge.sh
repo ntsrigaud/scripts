@@ -1,6 +1,10 @@
 #!/bin/bash
 
-set -ex  # Added -x for debugging
+if [[ "${DEBUG:-false}" == "true" ]]; then
+  set -ex  # Enable debugging and exit on error
+else
+  set -e  # Exit on error only
+fi
 
 INPUT_DIR="${1:-.}"
 INPUT_DIR="$(realpath "$INPUT_DIR")"
