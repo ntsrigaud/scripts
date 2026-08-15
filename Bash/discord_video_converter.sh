@@ -47,8 +47,26 @@ done
 mkdir -p "$OUT_DIR"
 
 # ==============================================================================
-# Function: Split file if it is larger than 10 MB
+# Helper Function: Build audio tempo filter string for ffmpeg
 # ==============================================================================
+build_atempo_filter() {
+  local speed="$1"
+  local filter=""
+  
+  while $(awk -v s="$speed" 'BEGIN {exit !(s > 2.0)}'); do
+    filter="${filter}atempo=2.0,"
+    speed=$(awk -v s="$speed" 'BEGIN {print s / 2.0}')
+  done
+  
+  while $(awk -v s="$speed" 'BEGIN {exit !(s < 0.5)}'); do
+    filter="${filter}atempo=0.5,"
+    speed=$(awk -v s="$speed" 'BEGIN {print s / 0.5}')
+  done
+  
+  filter="${filter}atempo=${speed}"
+  echo "$filter"
+}
+
 split_if_large() {
   local filepath="$1"
   
