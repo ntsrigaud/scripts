@@ -18,9 +18,11 @@ ARCH="$(uname -m)"
 if [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "amd64" ]; then
     STD_ARCH="x86_64"
     AGY_ARCH="x64"
+    GH_ARCH="amd64"
 elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
     STD_ARCH="arm64"
     AGY_ARCH="arm64"
+    GH_ARCH="arm64"
 else
     log "Unsupported architecture: $ARCH"
     exit 1
@@ -30,10 +32,12 @@ if [ "$OS" = "Linux" ]; then
     NVIM_OS="linux"
     LAZYGIT_OS="Linux"
     AGY_OS="linux"
+    GH_OS="linux"
 elif [ "$OS" = "Darwin" ]; then
     NVIM_OS="macos"
     LAZYGIT_OS="Darwin"
     AGY_OS="mac"
+    GH_OS="macOS"
 else
     log "Unsupported OS: $OS"
     exit 1
@@ -191,12 +195,55 @@ install_leaf() {
     curl -fsSL https://raw.githubusercontent.com/RivoLink/leaf/main/scripts/install.sh | sh -s -- "$INSTALL_DIR"
 }
 
+install_gh() {
+    local latest
+    latest=$(get_latest_release "cli/cli")
+    local version_stripped="${latest#v}"
+    
+    if is_installed gh; then
+        local current
+        current=$(gh --version 2>/dev/null | awk '/gh version/ {print $3}' || echo "unknown")
+        if [ -z "$current" ]; then current="unknown"; fi
+        
+        if [[ "$current" == "$version_stripped" ]] || [[ "$current" == "$latest" ]]; then
+            log "GitHub CLI (gh) is up-to-date ($latest). Skipping..."
+            return
+        fi
+        log "Updating GitHub CLI to $latest..."
+    else
+        log "Installing GitHub CLI ($latest)..."
+    fi
+
+    cd "$TMP_DIR"
+    local asset_name="gh_${version_stripped}_${GH_OS}_${GH_ARCH}"
+    local ext="tar.gz"
+    if [ "$OS" = "Darwin" ]; then
+        ext="zip"
+    fi
+    
+    local url="https://github.com/cli/cli/releases/download/${latest}/${asset_name}.${ext}"
+    if [[ "$latest" == "latest" ]]; then
+        url="https://github.com/cli/cli/releases/latest/download/${asset_name}.${ext}"
+    fi
+    
+    curl -LO "$url"
+    
+    if [ "$ext" = "zip" ]; then
+        unzip -q "${asset_name}.zip"
+    else
+        tar -xzf "${asset_name}.tar.gz"
+    fi
+    
+    mv "${asset_name}/bin/gh" "$INSTALL_DIR/"
+}
+
 main() {
     setup_path
     install_neovim
     install_lazygit
     install_agy
     install_leaf
+    install_gh
     
     log "Installation complete! 🎉"
     if [ "$OS" = "Darwin" ]; then
