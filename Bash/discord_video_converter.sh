@@ -1,7 +1,47 @@
 #!/bin/bash
 
+# Default values
+SPEED="1.0"
+REMOVE_AUDIO=false
+RESET_TIMESTAMPS=1
 MAX_SIZE=$((9 * 1024 * 1024))
 OUT_DIR="converted"
+
+# Parse CLI flags
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -s|--speed)
+      SPEED="$2"
+      shift 2
+      ;;
+    -n|--no-audio|--mute|-an)
+      REMOVE_AUDIO=true
+      shift 1
+      ;;
+    -reset_timestamps|--reset-timestamps|-r)
+      # Accept flag with optional numerical argument (e.g. -reset_timestamps 1 or -reset_timestamps)
+      if [[ "$2" =~ ^[0-9]+$ ]]; then
+        RESET_TIMESTAMPS="$2"
+        shift 2
+      else
+        RESET_TIMESTAMPS=1
+        shift 1
+      fi
+      ;;
+    -h|--help)
+      echo "Usage: $0 [-s|--speed MULTIPLIER] [-n|--no-audio] [-reset_timestamps 1]"
+      echo "  -s, --speed           Video playback speed multiplier (default: 1.0)"
+      echo "  -n, --no-audio        Remove audio from converted video (default: keep audio)"
+      echo "  -reset_timestamps 1   Reset timestamps when splitting segments (enabled by default)"
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Usage: $0 [-s|--speed MULTIPLIER] [-n|--no-audio] [-reset_timestamps 1]"
+      exit 1
+      ;;
+  esac
+done
 
 # Create the output directory if it doesn't exist
 mkdir -p "$OUT_DIR"
