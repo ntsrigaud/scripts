@@ -67,6 +67,9 @@ build_atempo_filter() {
   echo "$filter"
 }
 
+# ==============================================================================
+# Function: Split file if it is larger than MAX_SIZE
+# ==============================================================================
 split_if_large() {
   local filepath="$1"
   
@@ -82,8 +85,8 @@ split_if_large() {
     local dir=$(dirname "$filepath")
     local base=$(basename "$filepath" .mp4)
     
-    # Split the video losslessly
-    ffmpeg -i "$filepath" -c copy -map 0 -segment_time "$seg_time" -f segment -reset_timestamps 1 -segment_start_number 1 "${dir}/${base}-part-%d.mp4"
+    # Split the video losslessly with reset_timestamps enabled
+    ffmpeg -i "$filepath" -c copy -map 0 -segment_time "$seg_time" -f segment -reset_timestamps "$RESET_TIMESTAMPS" -segment_start_number 1 "${dir}/${base}-part-%d.mp4"
     
     # Remove the original oversized file to save space and prevent re-splitting
     rm "$filepath"
