@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Define the maximum file size (10 MB in bytes)
-MAX_SIZE=$((10 * 1024 * 1024))
+MAX_SIZE=$((9 * 1024 * 1024))
 OUT_DIR="converted"
 
 # Create the output directory if it doesn't exist
@@ -17,7 +16,7 @@ split_if_large() {
   local filesize=$(wc -c < "$filepath" | tr -d ' ')
 
   if [ "$filesize" -gt "$MAX_SIZE" ]; then
-    echo "Notice: File $filepath is over 10MB. Splitting..."
+    echo "Notice: File $filepath is over 9MB. Splitting..."
     
     local duration=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$filepath")
     local seg_time=$(awk -v dur="$duration" -v size="$filesize" -v max="$MAX_SIZE" 'BEGIN { print (dur / (size / max)) * 0.95 }')
