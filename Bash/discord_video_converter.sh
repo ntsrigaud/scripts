@@ -96,7 +96,11 @@ split_if_large() {
 # ==============================================================================
 # Task 1: Check and Convert missing .mov files
 # ==============================================================================
-echo "Starting conversion check..."
+audio_status="kept"
+if [ "$REMOVE_AUDIO" = true ]; then
+  audio_status="removed"
+fi
+echo "Starting conversion check (speed: ${SPEED}x, audio: ${audio_status})..."
 
 # Enable nullglob so the loop safely skips if no .mov files exist
 shopt -s nullglob
@@ -113,8 +117,27 @@ for recording in *.mov; do
   if [ -f "$expected_output" ] || [ -f "$expected_split_output" ]; then
     echo "Skipping '$recording': Already converted."
   else
-    echo "Converting '$recording'..."
-    ffmpeg -i "$recording" -vcodec libx264 -crf 23 -preset medium -acodec aac -b:a 128k "$expected_output"
+    echo "Converting '$recording' (speed: ${SPEED}x, audio: ${audio_status})..."
+    
+    ffmpeg_args=(-i "$recording" -vcodec libx264 -crf 23 -preset medium)
+
+    # Apply speed filter if not 1.0x
+    if [ "$SPEED" != "1.0" ] && [ "$SPEED" != "1" ]; then
+      ffmpeg_args+=(-vf "setpts=PTS/${SPEED}")
+    fi
+
+    # Handle audio setting
+    if [ "$REMOVE_AUDIO" = true ]; then
+      ffmpeg_args+=(-an)
+    else
+      if [ "$SPEED" != "1.0" ] && [ "$SPEED" != "1" ]; then
+        af_filter=$(build_atempo_filter "$SPEED")
+        ffmpeg_args+=(-af "$af_filter")
+      fi
+      ffmpeg_args+=(-acodec aac -b:a 128k)
+    fi
+
+    ffmpeg "${ffmpeg_args[@]}" "$expected_output"
   fi
 done
 
